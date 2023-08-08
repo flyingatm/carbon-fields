@@ -488,7 +488,7 @@ class Helper {
 
 	/**
 	 * Get an attachment ID given a file URL
-	 * Modified version of https://wpscholar.com/blog/get-attachment-id-from-wp-image-url/
+	 * Uses WordPress's core attachment_url_to_postid() function.
 	 *
 	 * @static
 	 * @access public
@@ -498,7 +498,6 @@ class Helper {
 	 */
 	public static function get_attachment_id( $url ) {
 		$attachment_id = 0;
-		$dir           = wp_upload_dir();
 
 		/**
 		 * Filters the attachment URL from which the attachment ID is being determined.
@@ -509,39 +508,7 @@ class Helper {
 		 */
 		$url = apply_filters( 'carbon_fields_attachment_id_base_url', $url );
 
-		$filename = wp_basename( $url );
-
-		if ( strpos( $url, $dir['baseurl'] . '/' ) !== false ) {
-			$query_args = array(
-				'post_type'   => 'attachment',
-				'post_status' => 'inherit',
-				'fields'      => 'ids',
-				'meta_query'  => array(
-					array(
-						'value'   => $filename,
-						'compare' => 'LIKE',
-						'key'     => '_wp_attachment_metadata',
-					),
-				)
-			);
-
-			$query = new WP_Query( $query_args );
-
-			if ( $query->have_posts() ) {
-				foreach ( $query->posts as $post_id ) {
-					$meta                = wp_get_attachment_metadata( $post_id );
-					$original_file       = wp_basename( $meta['file'] );
-					$sizes 				 = isset( $meta['sizes'] ) && ! empty( $meta['sizes'] ) ? $meta['sizes'] : array();
-					$cropped_image_files = wp_list_pluck( $sizes, 'file' );
-
-					if ( $original_file === $filename || in_array( $filename, $cropped_image_files ) ) {
-						$attachment_id = intval( $post_id );
-
-						break;
-					}
-				}
-			}
-		}
+		$attachment_id = attachment_url_to_postid($url);
 
 		/**
 		 * Filters the attachment id found from the passed attachment URL.
