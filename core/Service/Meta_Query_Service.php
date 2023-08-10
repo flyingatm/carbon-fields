@@ -132,11 +132,13 @@ class Meta_Query_Service extends Service {
 	 *
 	 * @param \WP_Query $query
 	 */
-	public function hook_pre_get_terms( $query ) {
-		$meta_query = ! empty( $query->query_vars['meta_query'] ) ? $query->query_vars['meta_query'] : array();
-		if ( ! empty( $meta_query ) ) {
-			$meta_query = $this->filter_meta_query_array( $meta_query, 'term_meta' );
-			$query->query_vars['meta_query'] = $meta_query;
+	public function hook_pre_get_terms($query) {
+		if (!isset($query->query_vars['carbon_fields']) || (isset($query->query_vars['carbon_fields']) && $query->query_vars['carbon_fields'] === true)) {
+			$meta_query = !empty($query->query_vars['meta_query']) ? $query->query_vars['meta_query'] : array();
+			if (!empty($meta_query)) {
+				$meta_query = $this->filter_meta_query_array($meta_query, 'term_meta');
+				$query->query_vars['meta_query'] = $meta_query;
+			}
 		}
 	}
 
