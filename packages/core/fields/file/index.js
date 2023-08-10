@@ -55,7 +55,7 @@ class FileField extends Component {
 		const { data } = this.state;
 
 		if ( data.sizes ) {
-			const size = data.sizes.thumbnail || data.sizes.full;
+			const size = data.sizes.full || data.sizes.thumbnail;
 
 			if ( size ) {
 				return size.url;
