@@ -3,6 +3,7 @@
 namespace Carbon_Fields\Field;
 
 use Carbon_Fields\Value_Set\Value_Set;
+use stdClass;
 use WP_Query;
 use WP_Term_Query;
 use WP_User_Query;
@@ -16,7 +17,8 @@ use WP_Comment_Query;
  *  - Users
  *  - Comments
  */
-class Association_Field extends Field {
+class Association_Field extends Field
+{
 	/**
 	 * WP_Toolset instance for WP data loading
 	 *
@@ -77,33 +79,36 @@ class Association_Field extends Field {
 	 * @param string $name  Field name
 	 * @param string $label Field label
 	 */
-	public function __construct( $type, $name, $label ) {
-		$this->wp_toolset = \Carbon_Fields\Carbon_Fields::resolve( 'wp_toolset' );
-		$this->set_value_set( new Value_Set( Value_Set::TYPE_VALUE_SET, array( 'type' => '', 'subtype' => '', 'id' => 0 ) ) );
-		parent::__construct( $type, $name, $label );
+	public function __construct($type, $name, $label)
+	{
+		$this->wp_toolset = \Carbon_Fields\Carbon_Fields::resolve('wp_toolset');
+		$this->set_value_set(new Value_Set(Value_Set::TYPE_VALUE_SET, array('type' => '', 'subtype' => '', 'id' => 0)));
+		parent::__construct($type, $name, $label);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function set_value_from_input( $input ) {
+	public function set_value_from_input($input)
+	{
 		$value = array();
-		if ( isset( $input[ $this->get_name() ] ) ) {
-			$value = stripslashes_deep( $input[ $this->get_name() ] );
-			if ( is_array( $value ) ) {
-				$value = array_values( $value );
+		if (isset($input[$this->get_name()])) {
+			$value = stripslashes_deep($input[$this->get_name()]);
+			if (is_array($value)) {
+				$value = array_values($value);
 			}
 		}
-		$this->set_value( $value );
+		$this->set_value($value);
 		return $this;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function set_value( $value ) {
-		$value = $this->value_string_array_to_value_set( $value );
-		return parent::set_value( $value );
+	public function set_value($value)
+	{
+		$value = $this->value_string_array_to_value_set($value);
+		return parent::set_value($value);
 	}
 
 	/**
@@ -112,13 +117,14 @@ class Association_Field extends Field {
 	 * @param string $legacy_value
 	 * @return string
 	 */
-	protected function get_value_string_for_legacy_value( $legacy_value ) {
+	protected function get_value_string_for_legacy_value($legacy_value)
+	{
 		$entry_type = 'post';
 		$entry_subtype = 'post';
 
 		// attempt to find a suitable type that is registered to this field as post type is not stored for legacy data
-		foreach ( $this->types as $type ) {
-			if ( $type['type'] === $entry_type ) {
+		foreach ($this->types as $type) {
+			if ($type['type'] === $entry_type) {
 				$entry_subtype = $type['post_type'];
 				break;
 			}
@@ -134,22 +140,23 @@ class Association_Field extends Field {
 	 * @param string $value_string
 	 * @return array
 	 */
-	protected function value_string_to_property_array( $value_string ) {
-		if ( is_numeric( $value_string ) ) {
+	protected function value_string_to_property_array($value_string)
+	{
+		if (is_numeric($value_string)) {
 			// we are dealing with legacy data that only contains a post ID
-			$value_string = $this->get_value_string_for_legacy_value( $value_string );
+			$value_string = $this->get_value_string_for_legacy_value($value_string);
 		}
 
-		$value_pieces = explode( ':', $value_string );
-		$type = isset( $value_pieces[0] ) ? $value_pieces[0] : 'post';
-		$subtype = isset( $value_pieces[1] ) ? $value_pieces[1] : 'post';
-		$id = isset( $value_pieces[2] ) ? $value_pieces[2] : 0;
+		$value_pieces = explode(':', $value_string);
+		$type = isset($value_pieces[0]) ? $value_pieces[0] : 'post';
+		$subtype = isset($value_pieces[1]) ? $value_pieces[1] : 'post';
+		$id = isset($value_pieces[2]) ? $value_pieces[2] : 0;
 
 		$property_array = array(
 			Value_Set::VALUE_PROPERTY => $value_string,
 			'type' => $type,
 			'subtype' => $subtype,
-			'id' => intval( $id ),
+			'id' => intval($id),
 		);
 		return $property_array;
 	}
@@ -161,25 +168,26 @@ class Association_Field extends Field {
 	 * @param array $value_string_array
 	 * @return array<array>
 	 */
-	protected function value_string_array_to_value_set( $value_string_array ) {
+	protected function value_string_array_to_value_set($value_string_array)
+	{
 		$value_set = array();
-		foreach ( $value_string_array as $raw_value_entry ) {
+		foreach ($value_string_array as $raw_value_entry) {
 			$value_string = $raw_value_entry;
 
-			if ( is_array( $raw_value_entry ) ) {
-				if ( isset( $raw_value_entry['type'] ) ) {
+			if (is_array($raw_value_entry)) {
+				if (isset($raw_value_entry['type'])) {
 					// array is already in suitable format
 					$value_set[] = $raw_value_entry;
 					continue;
 				}
-				$value_string = $raw_value_entry[ Value_Set::VALUE_PROPERTY ];
+				$value_string = $raw_value_entry[Value_Set::VALUE_PROPERTY];
 			}
-			$value_string = trim( $value_string );
-			if ( empty( $value_string ) ) {
+			$value_string = trim($value_string);
+			if (empty($value_string)) {
 				continue;
 			}
 
-			$property_array = $this->value_string_to_property_array( $value_string );
+			$property_array = $this->value_string_to_property_array($value_string);
 			$value_set[] = $property_array;
 		}
 
@@ -191,47 +199,38 @@ class Association_Field extends Field {
 	 *
 	 * @access public
 	 *
-	 * @param  array $args
-	 * @return array $options The selectable options of the association field.
+	 * @param array $args
+	 * @return array Returns an array containing total options count and options data.
 	 */
-	public function get_options( $args = array() ) {
-		global $wpdb;
-
-		$args = wp_parse_args( $args, array(
+	public function get_options($args = array())
+	{
+		// Merge provided arguments with default values
+		$args = wp_parse_args($args, array(
 			'page' => 1,
 			'term' => '',
-		) );
+		));
 
-		$sql_queries = array();
+		// Prepare arguments for the specific type
+		$type_args = array_merge($this->types[0], array(
+			'term' => $args['term'],
+			'page' => $args['page'],
+			'posts_per_page' => $this->get_items_per_page()
+		));
 
-		foreach ( $this->types as $type ) {
-			$type_args = array_merge( $type, array(
-				'term' => $args['term'],
-			) );
+		// Create a dynamic callback name based on the type
+		$callback = "get_{$this->types[0]['type']}_options_sql";
 
-			$callback = "get_{$type['type']}_options_sql";
+		// Retrieve an SQL query by calling the appropriate callback
+		$query = $this->$callback($type_args);
 
-			$sql_statement = $this->$callback( $type_args );
-
-			$sql_queries[] = $sql_statement;
-		}
-
-		$sql_queries = implode( " UNION ", $sql_queries );
-
-		$per_page = $this->get_items_per_page();
-		$offset   = ($args['page'] - 1) * $per_page;
-
-		$sql_queries .= " ORDER BY `title` ASC LIMIT {$per_page} OFFSET {$offset}";
-
-		$results = $wpdb->get_results( $sql_queries );
-
+		// Initialize an empty array for options
 		$options = array();
 
-		foreach ( $results as $result ) {
-			$callback = "format_{$result->type}_option";
+		// Create a dynamic callback for formatting options
+		$callback = "format_{$this->types[0]['type']}_option";
 
-			$options[] = $this->$callback( $result );
-		}
+		// Populate options by calling the formatting callback
+		$options = $this->$callback($query->data, $this->types[0]);
 
 		/**
 		 * Filter the final list of options, available to a certain association field.
@@ -239,12 +238,15 @@ class Association_Field extends Field {
 		 * @param array  $options Unfiltered options items.
 		 * @param string $name Name of the association field.
 		 */
-		$options = apply_filters( 'carbon_fields_association_field_options', $options, $this->get_base_name() );
+		$options = apply_filters('carbon_fields_association_field_options', $options, $this->get_base_name());
 
-		return array(
-			'total_options' => $wpdb->get_var( "SELECT COUNT(*) FROM (" . preg_replace( '~(LIMIT .*)$~', '', $sql_queries ) . ") as t" ),
-			'options'       => $options,
+		// Prepare the return data
+		$return = array(
+			'total_options' => $query->count,
+			'options' => $options,
 		);
+
+		return $return;
 	}
 
 	/**
@@ -254,7 +256,8 @@ class Association_Field extends Field {
 	 *
 	 * @return array
 	 */
-	public function get_types() {
+	public function get_types()
+	{
 		return $this->types;
 	}
 
@@ -264,7 +267,8 @@ class Association_Field extends Field {
 	 * @param  array $types New types
 	 * @return self  $this
 	 */
-	public function set_types( $types ) {
+	public function set_types($types)
+	{
 		$this->types = $types;
 		return $this;
 	}
@@ -274,7 +278,8 @@ class Association_Field extends Field {
 	 *
 	 * @return int
 	 */
-	public function get_min() {
+	public function get_min()
+	{
 		return $this->min;
 	}
 
@@ -284,8 +289,9 @@ class Association_Field extends Field {
 	 * @param  int   $min
 	 * @return self  $this
 	 */
-	public function set_min( $min ) {
-		$this->min = intval( $min );
+	public function set_min($min)
+	{
+		$this->min = intval($min);
 		return $this;
 	}
 
@@ -294,7 +300,8 @@ class Association_Field extends Field {
 	 *
 	 * @return int
 	 */
-	public function get_max() {
+	public function get_max()
+	{
 		return $this->max;
 	}
 
@@ -304,8 +311,9 @@ class Association_Field extends Field {
 	 * @param  int   $max
 	 * @return self  $this
 	 */
-	public function set_max( $max ) {
-		$this->max = intval( $max );
+	public function set_max($max)
+	{
+		$this->max = intval($max);
 		return $this;
 	}
 
@@ -315,8 +323,9 @@ class Association_Field extends Field {
 	 * @param  int   $items_per_page
 	 * @return self  $this
 	 */
-	public function set_items_per_page( $items_per_page ) {
-		$this->items_per_page = intval( $items_per_page );
+	public function set_items_per_page($items_per_page)
+	{
+		$this->items_per_page = intval($items_per_page);
 		return $this;
 	}
 
@@ -325,7 +334,8 @@ class Association_Field extends Field {
 	 *
 	 * @return int
 	 */
-	public function get_items_per_page() {
+	public function get_items_per_page()
+	{
 		return $this->items_per_page;
 	}
 
@@ -334,7 +344,8 @@ class Association_Field extends Field {
 	 *
 	 * @return boolean
 	 */
-	public function get_duplicates_allowed() {
+	public function get_duplicates_allowed()
+	{
 		return $this->duplicates_allowed;
 	}
 
@@ -344,7 +355,8 @@ class Association_Field extends Field {
 	 * @param  boolean $allowed
 	 * @return self    $this
 	 */
-	public function set_duplicates_allowed( $allowed ) {
+	public function set_duplicates_allowed($allowed)
+	{
 		$this->duplicates_allowed = $allowed;
 		return $this;
 	}
@@ -356,8 +368,9 @@ class Association_Field extends Field {
 	 * @param  boolean $allow
 	 * @return self    $this
 	 */
-	public function allow_duplicates( $allow = true ) {
-		return $this->set_duplicates_allowed( $allow );
+	public function allow_duplicates($allow = true)
+	{
+		return $this->set_duplicates_allowed($allow);
 	}
 
 	/**
@@ -374,17 +387,18 @@ class Association_Field extends Field {
 	 * 	- Subtype of data (the particular post type or taxonomy)
 	 * 	- ID of the item (the database ID of the item)
 	 */
-	protected function value_to_json() {
+	protected function value_to_json()
+	{
 		$value_set = $this->get_value();
 		$value = array();
-		foreach ( $value_set as $entry ) {
+		foreach ($value_set as $entry) {
 			$item = array(
 				'type' => $entry['type'],
 				'subtype' => $entry['subtype'],
-				'id' => intval( $entry['id'] ),
-				'title' => $this->get_title_by_type( $entry['id'], $entry['type'], $entry['subtype'] ),
-				'label' => $this->get_item_label( $entry['id'], $entry['type'], $entry['subtype'] ),
-				'is_trashed' => ( $entry['type'] == 'post' && get_post_status( $entry['id'] ) === 'trash' ),
+				'id' => intval($entry['id']),
+				'title' => $this->get_title_by_type($entry['id'], $entry['type'], $entry['subtype']),
+				'label' => $this->get_item_label($entry['id'], $entry['type'], $entry['subtype']),
+				'is_trashed' => ($entry['type'] == 'post' && get_post_status($entry['id']) === 'trash'),
 			);
 			$value[] = $item;
 		}
@@ -396,18 +410,31 @@ class Association_Field extends Field {
 	 * @param  bool $load Whether to load data from the datastore.
 	 * @return mixed      The JSON field data.
 	 */
-	public function to_json( $load ) {
-		$field_data = parent::to_json( $load );
+	public function to_json($load)
+	{
+		$field_data = parent::to_json($load);
 
-		$field_data = array_merge( $field_data, array(
+		$field_data = array_merge($field_data, array(
 			'value'              => $this->value_to_json(),
 			'options'            => $this->get_options(),
 			'min'                => $this->get_min(),
 			'max'                => $this->get_max(),
 			'duplicates_allowed' => $this->duplicates_allowed,
-		) );
+		));
 
 		return $field_data;
+	}
+
+
+	public function search_posts_by_title($where, $wp_query)
+	{
+		global $wpdb;
+		if ($search_term = $wp_query->get('search_title')) {
+			if ($search_term !== '') {
+				$where .= ' AND ' . $wpdb->posts . '.post_title LIKE \'%' . esc_sql($wpdb->esc_like($search_term)) . '%\'';
+			}
+		}
+		return $where;
 	}
 
 	/**
@@ -421,12 +448,15 @@ class Association_Field extends Field {
 	 * @param  array  $args
 	 * @return string
 	 */
-	public function get_post_options_sql( $args = array() ) {
+	public function get_post_options_sql($args = array())
+	{
 		$type        = $args['type'];
 		$post_type   = $args['post_type'];
 		$search_term = $args['term'];
+		$page = $args['page'];
+		$posts_per_page = $args['posts_per_page'];
 
-		unset( $args['type'], $args['post_type'], $args['term'] );
+		unset($args['type'], $args['post_type'], $args['term']);
 
 		/**
 		 * Filter the default query when fetching posts for a particular field.
@@ -435,43 +465,27 @@ class Association_Field extends Field {
 		 */
 		$filter_name = 'carbon_fields_association_field_options_' . $this->get_base_name() . '_' . $type . '_' . $post_type;
 
-		$args = apply_filters( $filter_name, array(
+		$args = apply_filters($filter_name, array(
 			'post_type'        => $post_type,
-			'posts_per_page'   => 1,
-			'fields'           => 'ids',
-			'suppress_filters' => false,
-			's'                => $search_term,
-		) );
+			'suppress_filters' => 0,
+			'paged' => $page,
+			'posts_per_page' => $posts_per_page,
+			'post_status' => 'publish',
+			'no_found_rows' => true,
+			'search_title' => sanitize_text_field($search_term)
 
-		add_filter( 'posts_fields_request', array( $this, 'get_post_options_sql_select_clause' ) );
+		));
 
-		add_filter( 'posts_groupby_request', '__return_empty_string' );
-		add_filter( 'posts_orderby_request', '__return_empty_string' );
-		add_filter( 'post_limits_request', '__return_empty_string' );
+		add_filter('posts_where', array($this, 'search_posts_by_title'), 10, 2);
+		$posts_query = new WP_Query($args);
+		remove_filter('posts_where', array($this, 'search_posts_by_title'), 10, 2);
 
-		$posts_query = new WP_Query( $args );
+		$return = new stdClass();
 
-		remove_filter( 'posts_fields_request', array( $this, 'get_post_options_sql_select_clause' ) );
+		$return->data = $posts_query;
+		$return->count = $posts_query->post_count;
 
-		remove_filter( 'posts_groupby_request', '__return_empty_string' );
-		remove_filter( 'posts_orderby_request', '__return_empty_string' );
-		remove_filter( 'post_limits_request', '__return_empty_string' );
-
-		return $posts_query->request;
-	}
-
-	/**
-	 * Modify the "SELECT" columns for the WP_Query.
-	 *
-	 * @access public
-	 *
-	 * @param  string $fields
-	 * @return string
-	 */
-	public function get_post_options_sql_select_clause( $fields ) {
-		global $wpdb;
-
-		return $fields . " , `{$wpdb->posts}`.`post_title` AS `title`, 'post' AS `type`, `{$wpdb->posts}`.`post_type` AS `subtype` ";
+		return $return;
 	}
 
 	/**
@@ -485,12 +499,13 @@ class Association_Field extends Field {
 	 * @param  array  $args
 	 * @return string
 	 */
-	public function get_term_options_sql( $args = array() ) {
+	public function get_term_options_sql($args = array())
+	{
 		$type        = $args['type'];
 		$taxonomy    = $args['taxonomy'];
 		$search_term = $args['term'];
 
-		unset( $args['type'], $args['taxonomy'], $args['term'] );
+		unset($args['type'], $args['taxonomy'], $args['term']);
 
 		/**
 		 * Filter the default parameters when fetching terms for a particular field.
@@ -499,22 +514,22 @@ class Association_Field extends Field {
 		 */
 		$filter_name = 'carbon_fields_association_field_options_' . $this->get_base_name() . '_' . $type . '_' . $taxonomy;
 
-		$args = apply_filters( $filter_name, array(
+		$args = apply_filters($filter_name, array(
 			'hide_empty'             => 0,
 			'taxonomy'               => $taxonomy,
 			'fields'                 => 'count',
 			'number'                 => 1,
 			'search'                 => $search_term,
 			'update_term_meta_cache' => false,
-		) );
+		));
 
-		add_filter( 'get_terms_fields', array( $this, 'get_term_options_sql_select_clause' ) );
-		add_filter( 'terms_clauses', array( $this, 'get_term_options_sql_clauses' ) );
+		add_filter('get_terms_fields', array($this, 'get_term_options_sql_select_clause'));
+		add_filter('terms_clauses', array($this, 'get_term_options_sql_clauses'));
 
-		$terms_query = new WP_Term_Query( $args );
+		$terms_query = new WP_Term_Query($args);
 
-		remove_filter( 'get_terms_fields', array( $this, 'get_term_options_sql_select_clause' ) );
-		remove_filter( 'terms_clauses', array( $this, 'get_term_options_sql_clauses' ) );
+		remove_filter('get_terms_fields', array($this, 'get_term_options_sql_select_clause'));
+		remove_filter('terms_clauses', array($this, 'get_term_options_sql_clauses'));
 
 		return $terms_query->request;
 	}
@@ -527,8 +542,9 @@ class Association_Field extends Field {
 	 * @param  array  $fields
 	 * @return array
 	 */
-	public function get_term_options_sql_select_clause( $fields ) {
-		return array( '`t`.`term_id` AS `ID`', '`t`.`name` AS `title`', '\'term\' as `type`', '`tt`.`taxonomy` AS `subtype`' );
+	public function get_term_options_sql_select_clause($fields)
+	{
+		return array('`t`.`term_id` AS `ID`', '`t`.`name` AS `title`', '\'term\' as `type`', '`tt`.`taxonomy` AS `subtype`');
 	}
 
 	/**
@@ -539,8 +555,9 @@ class Association_Field extends Field {
 	 * @param  array  $clauses
 	 * @return array
 	 */
-	public function get_term_options_sql_clauses( $clauses ) {
-		unset( $clauses['orderby'], $clauses['order'], $clauses['limits'] );
+	public function get_term_options_sql_clauses($clauses)
+	{
+		unset($clauses['orderby'], $clauses['order'], $clauses['limits']);
 
 		return $clauses;
 	}
@@ -556,13 +573,15 @@ class Association_Field extends Field {
 	 * @param  array  $args
 	 * @return string
 	 */
-	public function get_user_options_sql( $args = array() ) {
-		global $wpdb;
+	public function get_user_options_sql($args = array())
+	{
 
 		$type        = $args['type'];
 		$search_term = $args['term'];
+		$page = $args['page'];
+		$posts_per_page = $args['posts_per_page'];
 
-		unset( $args['type'], $args['term'], $args['subtype'] );
+		unset($args['type'], $args['term'], $args['subtype']);
 
 		/**
 		 * Filter the default parameters when fetching terms for a particular field.
@@ -571,16 +590,20 @@ class Association_Field extends Field {
 		 */
 		$filter_name = 'carbon_fields_association_field_options_' . $this->get_base_name() . '_' . $type;
 
-		$args = apply_filters( $filter_name, array(
-			'fields' => 'ID',
-			'number' => 1,
-			'search' => $search_term,
-		) );
+		$args = apply_filters($filter_name, array(
+			'number' => $posts_per_page,
+			'paged' => $page,
+			'search' => '*' . sanitize_text_field($search_term) . '*'
+		));
 
-		$users_query = new WP_User_Query;
-		$users_query->prepare_query( $args );
+		$users_query = new WP_User_Query($args);
 
-		return "SELECT `{$wpdb->users}`.`ID`, '' AS `title`, 'user' AS `type`, 'user' AS `subtype` {$users_query->query_from} {$users_query->query_where}";
+		$final = new stdClass();
+
+		$final->data = $users_query->get_results();
+		$final->count = count($users_query->get_results());
+
+		return $final;
 	}
 
 	/**
@@ -594,11 +617,12 @@ class Association_Field extends Field {
 	 * @param  array  $args
 	 * @return string
 	 */
-	public function get_comment_options_sql( $args = array() ) {
+	public function get_comment_options_sql($args = array())
+	{
 		$type        = $args['type'];
 		$search_term = $args['term'];
 
-		unset( $args['type'], $args['term'], $args['subtype'] );
+		unset($args['type'], $args['term'], $args['subtype']);
 
 		/**
 		 * Filter the default parameters when fetching comments for a particular field.
@@ -607,18 +631,18 @@ class Association_Field extends Field {
 		 */
 		$filter_name = 'carbon_fields_association_field_options_' . $this->get_base_name() . '_' . $type;
 
-		$args = apply_filters( $filter_name, array(
+		$args = apply_filters($filter_name, array(
 			'fields' => 'ids',
 			'number' => 1,
 			'search' => $search_term,
-		) );
+		));
 
-		add_filter( 'comments_clauses', array( $this, 'get_comments_clauses' ) );
+		add_filter('comments_clauses', array($this, 'get_comments_clauses'));
 
 		$comments_query = new WP_Comment_Query;
-		$comments_query->query( $args );
+		$comments_query->query($args);
 
-		remove_filter( 'comments_clauses', array( $this, 'get_comments_clauses' ) );
+		remove_filter('comments_clauses', array($this, 'get_comments_clauses'));
 
 		return $comments_query->request;
 	}
@@ -632,17 +656,18 @@ class Association_Field extends Field {
 	 * @param  array  $clauses
 	 * @return array
 	 */
-	public function get_comments_clauses( $clauses ) {
+	public function get_comments_clauses($clauses)
+	{
 		global $wpdb;
 
 		$clauses['fields'] = " {$wpdb->comments}.`comment_ID` AS `ID`, '' AS `title`, 'comment' AS `type`, 'comment' AS `subtype` ";
 
-		unset( $clauses['orderby'], $clauses['limits'], $clauses['groupby'] );
+		unset($clauses['orderby'], $clauses['limits'], $clauses['groupby']);
 
 		return $clauses;
 	}
 
-		/**
+	/**
 	 * Used to get the thumbnail of an item.
 	 *
 	 * Can be overriden or extended by the `carbon_fields_association_field_option_thumbnail` filter.
@@ -652,14 +677,15 @@ class Association_Field extends Field {
 	 * @param string $subtype The subtype - "page", "post", "category", etc.
 	 * @return string $title The title of the item.
 	 */
-	public function get_thumbnail_by_type( $id, $type, $subtype = '' ) {
+	public function get_thumbnail_by_type($id, $type, $subtype = '')
+	{
 		$thumbnail_url = '';
 
-		if ( $type === 'post' ) {
-			$thumbnail_url = get_the_post_thumbnail_url( $id, 'thumbnail' );
+		if ($type === 'post') {
+			$thumbnail_url = get_the_post_thumbnail_url($id, 'thumbnail');
 		}
 
-		return apply_filters( 'carbon_fields_association_field_option_thumbnail', $thumbnail_url, $id, $type, $subtype );
+		return apply_filters('carbon_fields_association_field_option_thumbnail', $thumbnail_url, $id, $type, $subtype);
 	}
 
 	/**
@@ -672,19 +698,20 @@ class Association_Field extends Field {
 	 * @param string $subtype The subtype - "page", "post", "category", etc.
 	 * @return string $title The title of the item.
 	 */
-	public function get_title_by_type( $id, $type, $subtype = '' ) {
+	public function get_title_by_type($id, $type, $subtype = '')
+	{
 		$title = '';
 
 		$method = 'get_' . $type . '_title';
-		$callable = array( $this->wp_toolset, $method );
-		if ( is_callable( $callable ) ) {
-			$title = call_user_func( $callable, $id, $subtype );
+		$callable = array($this->wp_toolset, $method);
+		if (is_callable($callable)) {
+			$title = call_user_func($callable, $id, $subtype);
 		}
 
-		if ( $type === 'comment' ) {
-			$max = apply_filters( 'carbon_fields_association_field_comment_length', 30, $this->get_base_name() );
-			if ( strlen( $title ) > $max ) {
-				$title = substr( $title, 0, $max ) . '...';
+		if ($type === 'comment') {
+			$max = apply_filters('carbon_fields_association_field_comment_length', 30, $this->get_base_name());
+			if (strlen($title) > $max) {
+				$title = substr($title, 0, $max) . '...';
 			}
 		}
 
@@ -697,9 +724,9 @@ class Association_Field extends Field {
 		 * @param string $type    Item type (post, term, user, comment, or a custom one).
 		 * @param string $subtype Subtype - "page", "post", "category", etc.
 		 */
-		$title = apply_filters( 'carbon_fields_association_field_title', $title, $this->get_base_name(), $id, $type, $subtype );
+		$title = apply_filters('carbon_fields_association_field_title', $title, $this->get_base_name(), $id, $type, $subtype);
 
-		if ( ! $title ) {
+		if (!$title) {
 			$title = '(no title) - ID: ' . $id;
 		}
 
@@ -716,14 +743,15 @@ class Association_Field extends Field {
 	 * @param string  $subtype Subtype - "page", "post", "category", etc.
 	 * @return string $label The label of the item.
 	 */
-	public function get_item_label( $id, $type, $subtype = '' ) {
+	public function get_item_label($id, $type, $subtype = '')
+	{
 		$label = $subtype ? $subtype : $type;
 
-		if ( $type === 'post' ) {
-			$post_type_object = get_post_type_object( $subtype );
+		if ($type === 'post') {
+			$post_type_object = get_post_type_object($subtype);
 			$label = $post_type_object->labels->singular_name;
-		} elseif ( $type === 'term' ) {
-			$taxonomy_object = get_taxonomy( $subtype );
+		} elseif ($type === 'term') {
+			$taxonomy_object = get_taxonomy($subtype);
 			$label = $taxonomy_object->labels->singular_name;
 		}
 
@@ -736,7 +764,7 @@ class Association_Field extends Field {
 		 * @param string $type    Item type (post, term, user, comment, or a custom one).
 		 * @param string $subtype Subtype - "page", "post", "category", etc.
 		 */
-		return apply_filters( 'carbon_fields_association_field_item_label', $label, $this->get_base_name(), $id, $type, $subtype );
+		return apply_filters('carbon_fields_association_field_item_label', $label, $this->get_base_name(), $id, $type, $subtype);
 	}
 
 	/**
@@ -746,28 +774,28 @@ class Association_Field extends Field {
 	 * @param  int $id      ID of the object.
 	 * @return string       URL of the edit link.
 	 */
-	protected function get_object_edit_link( $type, $id ) {
-		switch ( $type['type'] ) {
+	protected function get_object_edit_link($type, $id)
+	{
+		switch ($type['type']) {
 
 			case 'post':
-				$edit_link = get_edit_post_link( $id, '' );
+				$edit_link = get_edit_post_link($id, '');
 				break;
 
 			case 'term':
-				$edit_link = get_edit_term_link( $id, '', $type['type'] );
+				$edit_link = get_edit_term_link($id, '', $type['type']);
 				break;
 
 			case 'comment':
-				$edit_link = get_edit_comment_link( $id );
+				$edit_link = get_edit_comment_link($id);
 				break;
 
 			case 'user':
-				$edit_link = get_edit_user_link( $id );
+				$edit_link = get_edit_user_link($id);
 				break;
 
 			default:
 				$edit_link = false;
-
 		}
 
 		return $edit_link;
@@ -776,20 +804,34 @@ class Association_Field extends Field {
 	/**
 	 * Prepares an option of type 'post' for JS usage.
 	 *
-	 * @param  \stdClass  $data
+	 * @param  Object $data
 	 * @return array
 	 */
-	public function format_post_option( $data ) {
-		return array(
-			'id'         => intval( $data->ID ),
-			'title'      => $this->get_title_by_type( $data->ID, $data->type, $data->subtype ),
-			'thumbnail'  => get_the_post_thumbnail_url( $data->ID, 'thumbnail' ),
-			'type'       => $data->type,
-			'subtype'    => $data->subtype,
-			'label'      => $this->get_item_label( $data->ID, $data->type, $data->subtype ),
-			'is_trashed' => ( get_post_status( $data->ID ) == 'trash' ),
-			'edit_link'  => $this->get_object_edit_link( get_object_vars( $data ), $data->ID ),
-		);
+	public function format_post_option($data, $type)
+	{
+		// Storage
+		$format = [];
+
+		// Check if there are posts
+		if ($data->have_posts()) {
+			// Start the loop
+			while ($data->have_posts()) {
+				$data->the_post();
+
+				$format[] = [
+					'id' => get_the_ID(),
+					'title' => html_entity_decode(get_the_title()),
+					'thumbnail' => get_the_post_thumbnail_url(),
+					'type' => $type['type'],
+					'subtype' => $type['post_type'],
+					'label'   => $this->get_item_label(get_the_ID(), $type['type'], $type['post_type']),
+					'is_trashed' => (get_post_status() == 'trash'),
+					'edit_link'  => $this->get_object_edit_link($type, get_the_ID()),
+				];
+			}
+		}
+
+		return $format;
 	}
 
 	/**
@@ -798,16 +840,17 @@ class Association_Field extends Field {
 	 * @param  \stdClass  $data
 	 * @return array
 	 */
-	public function format_term_option( $data ) {
+	public function format_term_option($data)
+	{
 		return array(
-			'id'         => intval( $data->ID ),
-			'title'      => $this->get_title_by_type( $data->ID, $data->type, $data->subtype ),
+			'id'         => intval($data->ID),
+			'title'      => $this->get_title_by_type($data->ID, $data->type, $data->subtype),
 			'thumbnail'  => '',
 			'type'       => $data->type,
 			'subtype'    => $data->subtype,
-			'label'      => $this->get_item_label( $data->ID, $data->type, $data->subtype ),
+			'label'      => $this->get_item_label($data->ID, $data->type, $data->subtype),
 			'is_trashed' => false,
-			'edit_link'  => $this->get_object_edit_link( get_object_vars( $data ), $data->ID ),
+			'edit_link'  => $this->get_object_edit_link(get_object_vars($data), $data->ID),
 		);
 	}
 
@@ -817,35 +860,49 @@ class Association_Field extends Field {
 	 * @param  \stdClass  $data
 	 * @return array
 	 */
-	public function format_comment_option( $data ) {
+	public function format_comment_option($data)
+	{
 		return array(
-			'id'         => intval( $data->ID ),
-			'title'      => $this->get_title_by_type( $data->ID, 'comment' ),
+			'id'         => intval($data->ID),
+			'title'      => $this->get_title_by_type($data->ID, 'comment'),
 			'thumbnail'  => '',
 			'type'       => 'comment',
 			'subtype'    => 'comment',
-			'label'      => $this->get_item_label( $data->ID, 'comment' ),
+			'label'      => $this->get_item_label($data->ID, 'comment'),
 			'is_trashed' => false,
-			'edit_link'  => $this->get_object_edit_link( get_object_vars( $data ), $data->ID ),
+			'edit_link'  => $this->get_object_edit_link(get_object_vars($data), $data->ID),
 		);
 	}
 
 	/**
 	 * Prepares an option of type 'user' for JS usage.
 	 *
-	 * @param  \stdClass  $data
+	 * @param  Object $data
 	 * @return array
 	 */
-	public function format_user_option( $data ) {
-		return array(
-			'id'         => intval( $data->ID ),
-			'title'      => $this->get_title_by_type( $data->ID, 'user' ),
-			'thumbnail'  => get_avatar_url( $data->ID, array( 'size' => 150 ) ),
-			'type'       => 'user',
-			'subtype'    => 'user',
-			'label'      => $this->get_item_label( $data->ID, 'user' ),
-			'is_trashed' => false,
-			'edit_link'  => $this->get_object_edit_link( get_object_vars( $data ), $data->ID ),
-		);
+	public function format_user_option($data, $type)
+	{
+		// Storage
+		$format = [];
+
+		// Check if there are posts
+		if (count($data) > 0) {
+			// Start the loop
+			foreach ($data as $user) {
+
+				$format[] = [
+					'id' => intval($user->ID),
+					'title' => html_entity_decode(sanitize_text_field($user->nickname)),
+					'thumbnail' => get_avatar_url($user->ID, array('size' => 150)),
+					'type' => $type['type'],
+					'subtype' => $type['type'],
+					'label'      => $this->get_item_label($user->ID, $type['type']),
+					'is_trashed' => false,
+					'edit_link'  => $this->get_object_edit_link($type, $user->ID)
+				];
+			}
+		}
+
+		return $format;
 	}
 }
