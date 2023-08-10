@@ -96,7 +96,7 @@ class MediaGalleryField extends Component {
 	 */
 	getAttachmentThumb( attachment ) {
 		if ( attachment.sizes ) {
-			const size = attachment.sizes.thumbnail || attachment.sizes.full;
+			const size = attachment.sizes.full || attachment.sizes.thumbnail;
 
 			if ( size ) {
 				return size.url;
