@@ -23,7 +23,7 @@ class MapField extends Component {
 
 	// Handle the selection of a place from the Autocomplete
 	handlePlaceSelect = (place) => {
-		const { geometry, formatted_address, place_id, name } = place;
+		const { geometry, place_id, name } = place;
 		const lat = geometry.location.lat();
 		const lng = geometry.location.lng();
 
@@ -32,8 +32,7 @@ class MapField extends Component {
 			place_id,
 			name,
 			lat,
-			lng,
-			address: formatted_address,
+			lng
 		});
 
 		// Update the map component with new location
@@ -47,7 +46,7 @@ class MapField extends Component {
 	initAutocomplete() {
 		const input = this.autocompleteInputRef.current;
 		const autocomplete = new window.google.maps.places.Autocomplete(input, {
-			fields: ["name", "place_id", "formatted_address", "geometry"]
+			fields: ["name", "place_id", "geometry"]
 		});
 
 		// Prevent form submission on Enter key press in the Autocomplete input
@@ -107,7 +106,7 @@ class MapField extends Component {
 						type="text"
 						ref={this.autocompleteInputRef}
 						className="cf-map__search cf-search-input__inner"
-						defaultValue={value.address || ''}
+						defaultValue={value.name || ''}
 						placeholder="Search for a place"
 					/>
 				</div>
