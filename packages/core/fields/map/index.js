@@ -1,196 +1,129 @@
-/**
- * External dependencies.
- */
-import of from 'callbag-of';
-import { Component, Fragment } from '@wordpress/element';
+// Import required dependencies and styles
+import { Component, Fragment, createRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { withEffects, toProps } from 'refract-callbag';
 import { debounce } from 'lodash';
-import {
-	map,
-	pipe,
-	merge
-} from 'callbag-basics';
-
-/**
- * The internal dependencies.
- */
 import './style.scss';
-import SearchInput from '../../components/search-input';
 import GoogleMap from './google-map';
 
 class MapField extends Component {
-	/**
-	 * Handles the change of search.
-	 *
-	 * @param  {string} address
-	 * @return {void}
-	 */
-	handleSearchChange = debounce( ( address ) => {
-		if ( address ) {
-			this.props.onGeocodeAddress( { address } );
-		}
-	}, 250 )
+	// Create a reference for the autocomplete input
+	autocompleteInputRef = createRef();
 
-	/**
-	 * Handles the change of map location.
-	 *
-	 * @param  {Object} location
-	 * @return {void}
-	 */
-	handleMapChange = ( location ) => {
-		const {
-			id,
-			value,
-			onChange
-		} = this.props;
-
-		onChange( id, {
-			...value,
-			...location
-		} );
+	componentDidMount() {
+		// Initialize the Google Places Autocomplete
+		this.initAutocomplete();
 	}
 
-	/**
-	 * Renders the component.
-	 *
-	 * @return {Object}
-	 */
-	render() {
-		const {
-			id,
+	// Handler for debouncing search input change
+	handleSearchChange = debounce((address) => {
+		if (address) {
+			this.props.onGeocodeAddress({ address });
+		}
+	}, 250);
+
+	// Handle the selection of a place from the Autocomplete
+	handlePlaceSelect = (place) => {
+		const { geometry, formatted_address, place_id, name } = place;
+		const lat = geometry.location.lat();
+		const lng = geometry.location.lng();
+
+		this.props.onChange(this.props.id, {
+			...this.props.value,
+			place_id,
 			name,
-			value
-		} = this.props;
+			lat,
+			lng,
+			address: formatted_address,
+		});
+
+		// Update the map component with new location
+		this.mapComponent.updateMap({
+			lat,
+			lng,
+		});
+	};
+
+	// Initialize the Google Places Autocomplete
+	initAutocomplete() {
+		const input = this.autocompleteInputRef.current;
+		const autocomplete = new window.google.maps.places.Autocomplete(input, {
+			fields: ["name", "place_id", "formatted_address", "geometry"]
+		});
+
+		// Prevent form submission on Enter key press in the Autocomplete input
+		input.addEventListener('keydown', (event) => {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+			}
+		});
+
+		// Handle the selection of a place from Autocomplete dropdown
+		autocomplete.addListener('place_changed', () => {
+			const place = autocomplete.getPlace();
+			if (place.geometry) {
+				this.handlePlaceSelect(place);
+			}
+		});
+	}
+
+
+	render() {
+		const { id, name, value } = this.props;
 
 		return (
 			<Fragment>
-				<SearchInput
-					id={ id }
-					className="cf-map__search"
-					name={ `${ name }[address]` }
-					value={ value.address }
-					onChange={ this.handleSearchChange }
+				{/* Hidden input fields for place_id, name, lat, lng, and zoom */}
+				<input
+					type="hidden"
+					name={`${name}[place_id]`}
+					value={value.place_id || ''}
 				/>
-
+				<input
+					type="hidden"
+					name={`${name}[name]`}
+					value={value.name || ''}
+				/>
+				<input
+					type="hidden"
+					name={`${name}[lat]`}
+					value={value.lat || ''}
+				/>
+				<input
+					type="hidden"
+					name={`${name}[lng]`}
+					value={value.lng || ''}
+					readOnly
+				/>
+				<input
+					type="hidden"
+					name={`${name}[zoom]`}
+					value={value.zoom || ''}
+					readOnly
+				/>
+				{/* Autocomplete input */}
+				<div className="cf-search-input dashicons-before dashicons-search">
+					<input
+						id={id}
+						type="text"
+						ref={this.autocompleteInputRef}
+						className="cf-map__search cf-search-input__inner"
+						defaultValue={value.address || ''}
+						placeholder="Search for a place"
+					/>
+				</div>
+				{/* GoogleMap component */}
 				<GoogleMap
+					ref={(map) => (this.mapComponent = map)}
 					className="cf-map__canvas"
-					lat={ value.lat }
-					lng={ value.lng }
-					zoom={ value.zoom }
-					onChange={ this.handleMapChange }
-				/>
-
-				<input
-					type="hidden"
-					name={ `${ name }[lat]` }
-					value={ value.lat }
-				/>
-
-				<input
-					type="hidden"
-					name={ `${ name }[lng]` }
-					value={ value.lng }
-					readOnly
-				/>
-
-				<input
-					type="hidden"
-					name={ `${ name }[zoom]` }
-					value={ value.zoom }
-					readOnly
+					lat={value.lat}
+					lng={value.lng}
+					zoom={value.zoom}
+					onChange={this.handleMapChange}
 				/>
 			</Fragment>
 		);
 	}
 }
 
-/**
- * The function that controls the stream of side-effects.
- *
- * @param  {Object} component
- * @return {Object}
- */
-function aperture( component ) {
-	const [ geocodeAddress$, geocodeAddress ] = component.useEvent( 'geocodeAddress' );
-
-	const geocodeAddressProps$ = pipe(
-		of( {
-			onGeocodeAddress: geocodeAddress
-		} ),
-		map( toProps )
-	);
-
-	const geocodeAddressEffect$ = pipe(
-		geocodeAddress$,
-		map( ( payload ) => ( {
-			type: 'GEOCODE_ADDRESS',
-			payload: payload
-		} ) )
-	);
-
-	return merge( geocodeAddressProps$, geocodeAddressEffect$ );
-}
-
-/**
- * The function that causes the side effects.
- *
- * @param  {Object} props
- * @return {Function}
- */
-function handler( props ) {
-	return function( effect ) {
-		const { payload, type } = effect;
-		const {
-			id,
-			value,
-			onChange
-		} = props;
-
-		switch ( type ) {
-			case 'GEOCODE_ADDRESS':
-				const geocode = ( address ) => {
-					return new Promise( ( resolve, reject ) => {
-						const geocoder = new window.google.maps.Geocoder();
-
-						geocoder.geocode( { address }, ( results, status ) => {
-							if ( status === window.google.maps.GeocoderStatus.OK ) {
-								const { location } = results[ 0 ].geometry;
-
-								resolve( {
-									lat: location.lat(),
-									lng: location.lng()
-								} );
-							} else if ( status === 'ZERO_RESULTS' ) {
-								reject( __( 'The address could not be found.', 'carbon-fields-ui' ) );
-							} else {
-								reject( `${ __( 'Geocode was not successful for the following reason: ', 'carbon-fields-ui' ) } ${ status }` );
-							}
-						} );
-					} );
-				};
-
-				geocode( payload.address )
-					.then( ( { lat, lng } ) => {
-						onChange( id, {
-							...value,
-							address: payload.address,
-							value: `${ lat },${ lng }`,
-							lat,
-							lng
-						} );
-					} )
-					.catch( ( alert ) => {
-						// eslint-disable-next-line
-						console.log( __( 'Error alert', 'carbon-fields-ui' ) );
-
-						// eslint-disable-next-line
-						console.log( alert );
-					} );
-
-				break;
-		}
-	};
-}
-
-export default withEffects( aperture, { handler } )( MapField );
+// Export the MapField component
+export default MapField;
