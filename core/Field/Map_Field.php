@@ -20,7 +20,8 @@ class Map_Field extends Field
 		'lat' => 40.346544,
 		'lng' => -101.645507,
 		'zoom' => 10,
-		'address' => '',
+		'name' => '',
+		'place_id' => ''
 	);
 
 	/**
@@ -32,7 +33,7 @@ class Map_Field extends Field
 	 */
 	public function __construct($type, $name, $label)
 	{
-		$this->set_value_set(new Value_Set(Value_Set::TYPE_MULTIPLE_PROPERTIES, array('lat' => '', 'lng' => '', 'zoom' => '', 'address' => '', 'place_id' => '')));
+		$this->set_value_set(new Value_Set(Value_Set::TYPE_MULTIPLE_PROPERTIES, array('lat' => '', 'lng' => '', 'zoom' => '', 'name' => '', 'place_id' => '')));
 		parent::__construct($type, $name, $label);
 	}
 
@@ -43,7 +44,7 @@ class Map_Field extends Field
 	public static function admin_enqueue_scripts()
 	{
 		$api_key = apply_filters('carbon_fields_map_field_api_key', false);
-		$url = apply_filters('carbon_fields_map_field_api_url', '//maps.googleapis.com/maps/api/js?' . ($api_key ? 'key=' . $api_key : ''), $api_key);
+		$url = apply_filters('carbon_fields_map_field_api_url', '//maps.googleapis.com/maps/api/js?' . ($api_key ? 'key=' . $api_key : ''), $api_key) . '&libraries=places';
 
 		wp_enqueue_script('carbon-google-maps', $url, array(), null);
 	}
@@ -64,8 +65,6 @@ class Map_Field extends Field
 	 */
 	public function set_value_from_input($input)
 	{
-		// Get the API key using a filter
-		$api_key = apply_filters('carbon_fields_map_field_api_key', false);
 
 		// Check if the field's value is present in the input array
 		if (!isset($input[$this->get_name()])) {
@@ -79,7 +78,8 @@ class Map_Field extends Field
 			'lat' => '',
 			'lng' => '',
 			'zoom' => '',
-			'address' => '',
+			'name' => '',
+			'place_id' => ''
 		);
 
 		// Loop through each value in $value_set array and check if it exists in the input array
@@ -94,39 +94,11 @@ class Map_Field extends Field
 		$value_set['lat'] = (float) $value_set['lat'];
 		$value_set['lng'] = (float) $value_set['lng'];
 		$value_set['zoom'] = (int) $value_set['zoom'];
+		$value_set['place_id'] = $value_set['place_id'];
+		$value_set['name'] = $value_set['name'];
 
 		// Calculate latlng value and assign it to the appropriate key in $value_set
 		$value_set[Value_Set::VALUE_PROPERTY] = $this->lat_lng_to_latlng($value_set['lat'], $value_set['lng']);
-
-		// Fetch geocode information from Google Maps API using wp_remote_get function
-		$response = wp_remote_get(
-			'https://maps.googleapis.com/maps/api/geocode/json?latlng=' . $value_set[Value_Set::VALUE_PROPERTY] . '&' . ($api_key ? 'key=' . $api_key : ''),
-			array(
-				'method'      => 'GET',
-				'timeout'     => 5,
-				'redirection' => 5,
-				'blocking'    => true,
-				'sslverify'   => false,
-			)
-		);
-
-		// Initialize place_id
-		$place_id = '';
-
-		// Decode the response body
-		$responseBody = json_decode($response['body']);
-
-		// Check if the necessary keys exist in the response body
-		if (
-			isset($responseBody->results[0]) &&
-			isset($responseBody->results[0]->place_id)
-		) {
-			// If they exist, assign the place_id value from the response
-			$place_id = $responseBody->results[0]->place_id;
-		}
-
-		// Assign the obtained place_id to $value_set
-		$value_set['place_id'] = $place_id;
 
 		// Set the final value in the field and return $this
 		$this->set_value($value_set);
@@ -150,7 +122,8 @@ class Map_Field extends Field
 				'lat' => floatval($value_set['lat']),
 				'lng' => floatval($value_set['lng']),
 				'zoom' => intval($value_set['zoom']),
-				'address' => $value_set['address'],
+				'name' => $value_set['name'],
+				'place_id' => $value_set['place_id'],
 				'value' => $value_set[Value_Set::VALUE_PROPERTY],
 			),
 		));
