@@ -35,11 +35,15 @@ class MapField extends Component {
 			lng
 		});
 
-		// Update the map component with new location
-		this.mapComponent.updateMap({
-			lat,
-			lng,
-		});
+		const map = this.props.field.default_value.map;
+		if (!map) {
+			// Update the map component with new location
+			this.mapComponent.updateMap({
+				lat,
+				lng,
+			});
+		}
+
 	};
 
 	// Initialize the Google Places Autocomplete
@@ -68,6 +72,19 @@ class MapField extends Component {
 
 	render() {
 		const { id, name, value } = this.props;
+		const map = this.props.field.default_value.map;
+		let mapElement;
+
+		if (!map) {
+			mapElement = <GoogleMap
+				ref={(map) => (this.mapComponent = map)}
+				className="cf-map__canvas"
+				lat={value.lat}
+				lng={value.lng}
+				zoom={value.zoom}
+				onChange={this.handleMapChange}
+			/>;
+		}
 
 		return (
 			<Fragment>
@@ -79,7 +96,7 @@ class MapField extends Component {
 				/>
 				<input
 					type="hidden"
-					name={`${name}[name]`}
+					name={`${name}[address]`}
 					value={value.name || ''}
 				/>
 				<input
@@ -106,19 +123,12 @@ class MapField extends Component {
 						type="text"
 						ref={this.autocompleteInputRef}
 						className="cf-map__search cf-search-input__inner"
-						defaultValue={value.name || ''}
+						defaultValue={value.address || ''}
 						placeholder="Search for a place"
 					/>
 				</div>
 				{/* GoogleMap component */}
-				<GoogleMap
-					ref={(map) => (this.mapComponent = map)}
-					className="cf-map__canvas"
-					lat={value.lat}
-					lng={value.lng}
-					zoom={value.zoom}
-					onChange={this.handleMapChange}
-				/>
+				{mapElement}
 			</Fragment>
 		);
 	}
