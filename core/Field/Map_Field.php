@@ -20,7 +20,7 @@ class Map_Field extends Field
 		'lat' => 40.346544,
 		'lng' => -101.645507,
 		'zoom' => 10,
-		'name' => '',
+		'address' => '',
 		'place_id' => ''
 	);
 
@@ -33,7 +33,7 @@ class Map_Field extends Field
 	 */
 	public function __construct($type, $name, $label)
 	{
-		$this->set_value_set(new Value_Set(Value_Set::TYPE_MULTIPLE_PROPERTIES, array('lat' => '', 'lng' => '', 'zoom' => '', 'name' => '', 'place_id' => '')));
+		$this->set_value_set(new Value_Set(Value_Set::TYPE_MULTIPLE_PROPERTIES, array('lat' => '', 'lng' => '', 'zoom' => '', 'address' => '', 'place_id' => '')));
 		parent::__construct($type, $name, $label);
 	}
 
@@ -78,7 +78,7 @@ class Map_Field extends Field
 			'lat' => '',
 			'lng' => '',
 			'zoom' => '',
-			'name' => '',
+			'address' => '',
 			'place_id' => ''
 		);
 
@@ -95,7 +95,7 @@ class Map_Field extends Field
 		$value_set['lng'] = (float) $value_set['lng'];
 		$value_set['zoom'] = (int) $value_set['zoom'];
 		$value_set['place_id'] = $value_set['place_id'];
-		$value_set['name'] = $value_set['name'];
+		$value_set['address'] = $value_set['address'];
 
 		// Calculate latlng value and assign it to the appropriate key in $value_set
 		$value_set[Value_Set::VALUE_PROPERTY] = $this->lat_lng_to_latlng($value_set['lat'], $value_set['lng']);
@@ -122,7 +122,7 @@ class Map_Field extends Field
 				'lat' => floatval($value_set['lat']),
 				'lng' => floatval($value_set['lng']),
 				'zoom' => intval($value_set['zoom']),
-				'name' => $value_set['name'],
+				'address' => $value_set['address'],
 				'place_id' => $value_set['place_id'],
 				'value' => $value_set[Value_Set::VALUE_PROPERTY],
 			),
@@ -151,4 +151,21 @@ class Map_Field extends Field
 			)
 		));
 	}
+
+	/**
+	 * Set if hide map or not.
+	 *
+	 * @param  boolean $boolean  Latitude
+	 * @return $this
+	 */
+	public function hide_map($boolean)
+	{
+		return $this->set_default_value(array_merge(
+			$this->get_default_value(),
+			array(
+				'map' => $boolean
+			)
+		));
+	}
+
 }
