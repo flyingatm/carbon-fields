@@ -80,6 +80,14 @@ class Complex_Field extends Field {
 	protected $duplicate_groups_allowed = true;
 
 	/**
+	 * Defines whether pre insert if empty or not
+	 *
+	 * @var boolean
+	 */
+	protected $pre_insert = true;
+
+
+	/**
 	 * Entry labels
 	 * These are translated in init()
 	 *
@@ -581,6 +589,7 @@ class Complex_Field extends Field {
 			'labels' => $this->labels,
 			'min' => $this->get_min(),
 			'max' => $this->get_max(),
+			'pre_insert' => $this->get_pre_insert(),
 			'multiple_groups' => count( $groups_data ) > 1,
 			'groups' => $groups_data,
 			'value' => $value_data,
@@ -633,6 +642,28 @@ class Complex_Field extends Field {
 	public function set_min( $min ) {
 		$this->values_min = intval( $min );
 		return $this;
+	}
+
+
+	/**
+	 * Pre insert or not.
+	 *
+	 * @param  boolean   $boolean
+	 * @return self  $this
+	 */
+	public function set_pre_insert( $boolean ) {
+		$this->pre_insert = $boolean;
+		return $this;
+	}
+
+	/**
+	 * Get Pre insert or not.
+	 *
+	 * @param  boolean   $boolean
+	 * @return self  $this
+	 */
+	public function get_pre_insert() {
+		return $this->pre_insert;
 	}
 
 	/**
