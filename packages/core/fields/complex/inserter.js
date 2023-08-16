@@ -20,9 +20,9 @@ class ComplexInserter extends Component {
 	 * @return {void}
 	 */
 	handleClickOutside = () => {
-		this.setState( {
+		this.setState({
 			menuVisible: false
-		} );
+		});
 	}
 
 	/**
@@ -33,12 +33,12 @@ class ComplexInserter extends Component {
 	handleAddClick = () => {
 		const { groups, onSelect } = this.props;
 
-		if ( groups.length > 1 ) {
-			this.setState( ( { menuVisible } ) => ( {
-				menuVisible: ! menuVisible
-			} ) );
+		if (groups.length > 1) {
+			this.setState(({ menuVisible }) => ({
+				menuVisible: !menuVisible
+			}));
 		} else {
-			onSelect( groups[ 0 ] );
+			onSelect(groups[0]);
 		}
 	}
 
@@ -48,12 +48,12 @@ class ComplexInserter extends Component {
 	 * @param  {Object} group
 	 * @return {void}
 	 */
-	handleItemClick = ( group ) => {
-		this.setState( {
+	handleItemClick = (group) => {
+		this.setState({
 			menuVisible: false
-		} );
+		});
 
-		this.props.onSelect( group );
+		this.props.onSelect(group);
 	}
 
 	/**
@@ -62,30 +62,30 @@ class ComplexInserter extends Component {
 	 * @return {Object}
 	 */
 	render() {
-		const { buttonText, groups } = this.props;
+		const { buttonText, groups, autoClick, id } = this.props;
 
 		return (
 			<div className="cf-complex__inserter">
-				<button type="button" className="button cf-complex__inserter-button" onClick={ this.handleAddClick }>
-					{ buttonText }
+				<button type="button" className="button cf-complex__inserter-button" data-auto-click={autoClick} onClick={this.handleAddClick}>
+					{buttonText}
 				</button>
 
-				{ groups.length > 1 && (
-					<ul className="cf-complex__inserter-menu" hidden={ ! this.state.menuVisible }>
-						{ groups.map( ( group, index ) => (
+				{groups.length > 1 && (
+					<ul className="cf-complex__inserter-menu" hidden={!this.state.menuVisible}>
+						{groups.map((group, index) => (
 							<li
 								className="cf-complex__inserter-item"
-								key={ index }
-								onClick={ () => this.handleItemClick( group ) }
+								key={index}
+								onClick={() => this.handleItemClick(group)}
 							>
-								{ group.label }
+								{group.label}
 							</li>
-						) ) }
+						))}
 					</ul>
-				) }
+				)}
 			</div>
 		);
 	}
 }
 
-export default onClickOutside( ComplexInserter );
+export default onClickOutside(ComplexInserter);
