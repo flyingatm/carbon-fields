@@ -48,7 +48,7 @@ class ComplexField extends Component {
 	 */
 	state = {
 		currentDraggedGroup: null,
-		currentTab: get( this.props.value, `0.${ this.props.groupIdKey }`, null )
+		currentTab: get(this.props.value, `0.${this.props.groupIdKey}`, null)
 	};
 
 	/**
@@ -57,7 +57,7 @@ class ComplexField extends Component {
 	 * @return {boolean}
 	 */
 	get isTabbed() {
-		return this.props.field.layout.indexOf( 'tabbed' ) > -1;
+		return this.props.field.layout.indexOf('tabbed') > -1;
 	}
 
 	/**
@@ -79,7 +79,7 @@ class ComplexField extends Component {
 	get inserterButtonText() {
 		const { field } = this.props;
 
-		return sprintf( __( 'Add %s', 'carbon-fields-ui' ), field.labels.singular_name );
+		return sprintf(__('Add %s', 'carbon-fields-ui'), field.labels.singular_name);
 	}
 
 	/**
@@ -88,10 +88,10 @@ class ComplexField extends Component {
 	 * @param  {string} groupId
 	 * @return {?Object}
 	 */
-	findGroup( groupId ) {
+	findGroup(groupId) {
 		const { value, groupIdKey } = this.props;
 
-		return find( value, [ groupIdKey, groupId ] );
+		return find(value, [groupIdKey, groupId]);
 	}
 
 	/**
@@ -101,16 +101,16 @@ class ComplexField extends Component {
 	 * @param  {string} key
 	 * @return {Object[]}
 	 */
-	getAvailableGroups( key ) {
+	getAvailableGroups(key) {
 		const { field, value } = this.props;
 
-		if ( field.duplicate_groups_allowed ) {
+		if (field.duplicate_groups_allowed) {
 			return field.groups;
 		}
 
-		const existingGroupNames = value.map( ( group ) => group[ key ] );
+		const existingGroupNames = value.map((group) => group[key]);
 
-		return field.groups.filter( ( { name } ) => existingGroupNames.indexOf( name ) === -1 );
+		return field.groups.filter(({ name }) => existingGroupNames.indexOf(name) === -1);
 	}
 
 	/**
@@ -121,36 +121,36 @@ class ComplexField extends Component {
 	getGroupLabels() {
 		const { field, groupValues } = this.props;
 
-		return groupValues.map( ( [ name, values ], index ) => {
-			const group = find( field.groups, [ 'name', name ] );
+		return groupValues.map(([name, values], index) => {
+			const group = find(field.groups, ['name', name]);
 
-			if ( ! group ) {
+			if (!group) {
 				return 'N/A';
 			}
 
-			if ( ! isString( group.label_template ) ) {
+			if (!isString(group.label_template)) {
 				return group.label;
 			}
 
 			try {
-				const label = template( group.label_template )( {
+				const label = template(group.label_template)({
 					$_index: index,
 					...values
-				} );
+				});
 
 				return label || group.label;
-			} catch ( e ) {
+			} catch (e) {
 				// eslint-disable-next-line no-console
 				console.error(
 					sprintf(
-						__( 'Couldn\'t create the label of group - %s', 'carbon-fields-ui' ),
+						__('Couldn\'t create the label of group - %s', 'carbon-fields-ui'),
 						e.message
 					)
 				);
 
 				return 'N/A';
 			}
-		} );
+		});
 	}
 
 	/**
@@ -159,14 +159,14 @@ class ComplexField extends Component {
 	 * @param  {Object} selection
 	 * @return {void}
 	 */
-	handleAddGroup = ( selection ) => {
+	handleAddGroup = (selection) => {
 		const { groupIdKey, onAddGroup } = this.props;
 
-		onAddGroup( selection, ( group ) => {
-			if ( this.isTabbed ) {
-				this.handleTabsChange( group[ groupIdKey ] );
+		onAddGroup(selection, (group) => {
+			if (this.isTabbed) {
+				this.handleTabsChange(group[groupIdKey]);
 			}
-		} );
+		});
 	}
 
 	/**
@@ -175,16 +175,16 @@ class ComplexField extends Component {
 	 * @param  {string} groupId
 	 * @return {void}
 	 */
-	handleCloneGroup = ( groupId ) => {
+	handleCloneGroup = (groupId) => {
 		const { groupIdKey, onCloneGroup } = this.props;
 
-		const group = this.findGroup( groupId );
+		const group = this.findGroup(groupId);
 
-		onCloneGroup( group, ( clonedGroup ) => {
-			if ( this.isTabbed ) {
-				this.handleTabsChange( clonedGroup[ groupIdKey ] );
+		onCloneGroup(group, (clonedGroup) => {
+			if (this.isTabbed) {
+				this.handleTabsChange(clonedGroup[groupIdKey]);
 			}
-		} );
+		});
 	}
 
 	/**
@@ -193,25 +193,25 @@ class ComplexField extends Component {
 	 * @param  {string} groupId
 	 * @return {void}
 	 */
-	handleRemoveGroup = ( groupId ) => {
+	handleRemoveGroup = (groupId) => {
 		const {
 			value,
 			groupIdKey,
 			onRemoveGroup
 		} = this.props;
 
-		const group = this.findGroup( groupId );
+		const group = this.findGroup(groupId);
 
-		if ( this.isTabbed ) {
-			const currentIndex = value.indexOf( group );
+		if (this.isTabbed) {
+			const currentIndex = value.indexOf(group);
 			const nextIndex = currentIndex > 0 ? currentIndex - 1 : 1;
 
-			this.setState( {
-				currentTab: get( value, `${ nextIndex }.${ groupIdKey }`, null )
-			} );
+			this.setState({
+				currentTab: get(value, `${nextIndex}.${groupIdKey}`, null)
+			});
 		}
 
-		onRemoveGroup( group );
+		onRemoveGroup(group);
 	}
 
 	/**
@@ -222,7 +222,7 @@ class ComplexField extends Component {
 	handleToggleAllClick = () => {
 		const { allGroupsAreCollapsed, onToggleAllGroups } = this.props;
 
-		onToggleAllGroups( ! allGroupsAreCollapsed );
+		onToggleAllGroups(!allGroupsAreCollapsed);
 	}
 
 	/**
@@ -232,14 +232,14 @@ class ComplexField extends Component {
 	 * @param  {Object} ui
 	 * @return {void}
 	 */
-	handleGroupsSortStart = ( e, ui ) => {
+	handleGroupsSortStart = (e, ui) => {
 		const { value, groupIdKey } = this.props;
 		const index = ui.item.index();
-		const id = get( value, `${ index }.${ groupIdKey }`, null );
+		const id = get(value, `${index}.${groupIdKey}`, null);
 
-		this.setState( {
+		this.setState({
 			currentDraggedGroup: id
-		} );
+		});
 	}
 
 	/**
@@ -248,10 +248,10 @@ class ComplexField extends Component {
 	 * @param  {Object[]} groups
 	 * @return {void}
 	 */
-	handleGroupsSortUpdate = ( groups ) => {
+	handleGroupsSortUpdate = (groups) => {
 		const { id, onChange } = this.props;
 
-		onChange( id, groups );
+		onChange(id, groups);
 	}
 
 	/**
@@ -260,9 +260,9 @@ class ComplexField extends Component {
 	 * @return {void}
 	 */
 	handleGroupsSortStop = () => {
-		this.setState( {
+		this.setState({
 			currentDraggedGroup: null
-		} );
+		});
 	}
 
 	/**
@@ -271,10 +271,10 @@ class ComplexField extends Component {
 	 * @param  {string} groupId
 	 * @return {void}
 	 */
-	handleTabsChange = ( groupId ) => {
-		this.setState( {
+	handleTabsChange = (groupId) => {
+		this.setState({
 			currentTab: groupId
-		} );
+		});
 	}
 
 	/**
@@ -284,7 +284,7 @@ class ComplexField extends Component {
 	 */
 	render() {
 		const { currentDraggedGroup, currentTab } = this.state;
-
+		console.log(this.props);
 		const {
 			value,
 			field,
@@ -296,149 +296,150 @@ class ComplexField extends Component {
 			onToggleGroup
 		} = this.props;
 
-		const availableGroups = this.getAvailableGroups( groupFilterKey );
+		const availableGroups = this.getAvailableGroups(groupFilterKey);
 		const groupLabels = this.getGroupLabels();
 
 		// TODO: Move this to a memoized function.
-		const tabs = value.map( ( group, index ) => {
-			const id = group[ groupIdKey ];
-			const label = groupLabels[ index ];
+		const tabs = value.map((group, index) => {
+			const id = group[groupIdKey];
+			const label = groupLabels[index];
 
 			return {
 				id,
 				label
 			};
-		} );
+		});
 
 		return (
 			<Fragment>
-				{ this.isTabbed && !! value.length && (
+				{this.isTabbed && !!value.length && (
 					<Sortable
-						items={ value }
-						forwardedRef={ this.tabsList }
-						options={ {
+						items={value}
+						forwardedRef={this.tabsList}
+						options={{
 							axis: field.layout === 'tabbed-vertical' ? 'y' : 'x',
 							forcePlaceholderSize: true
-						} }
-						onUpdate={ this.handleGroupsSortUpdate }
+						}}
+						onUpdate={this.handleGroupsSortUpdate}
 					>
 						<ComplexTabs
-							ref={ this.tabsList }
-							items={ tabs }
-							current={ currentTab }
-							layout={ field.layout }
-							onChange={ this.handleTabsChange }
+							ref={this.tabsList}
+							items={tabs}
+							current={currentTab}
+							layout={field.layout}
+							onChange={this.handleTabsChange}
 						>
-							{ !! availableGroups.length && ! this.isMaximumReached && (
+							{!!availableGroups.length && !this.isMaximumReached && (
 								<ComplexInserter
 									buttonText="+"
-									groups={ availableGroups }
-									onSelect={ this.handleAddGroup }
+									groups={availableGroups}
+									onSelect={this.handleAddGroup}
 								/>
-							) }
+							)}
 						</ComplexTabs>
 					</Sortable>
-				) }
+				)}
 
-				{ ! value.length && (
-					<ComplexPlaceholder label={ __( 'There are no entries yet.', 'carbon-fields-ui' ) }>
+				{!value.length && (
+					<ComplexPlaceholder label={__('There are no entries yet.', 'carbon-fields-ui')}>
 						<ComplexInserter
-							buttonText={ this.inserterButtonText }
-							groups={ availableGroups }
-							onSelect={ this.handleAddGroup }
+							buttonText={this.inserterButtonText}
+							groups={availableGroups}
+							autoClick={field.pre_insert}
+							onSelect={this.handleAddGroup}
 						/>
 					</ComplexPlaceholder>
-				) }
+				)}
 
-				{ !! value.length && (
+				{!!value.length && (
 					<Sortable
-						items={ value }
-						options={ {
+						items={value}
+						options={{
 							// axis: 'y',
 							helper: 'clone',
 							handle: '.cf-complex__group-head',
 							placeholder: 'cf-complex__group-placeholder',
 							forceHelperSize: true,
 							forcePlaceholderSize: true
-						} }
-						forwardedRef={ this.groupsList }
-						onStart={ this.handleGroupsSortStart }
-						onUpdate={ this.handleGroupsSortUpdate }
-						onStop={ this.handleGroupsSortStop }
+						}}
+						forwardedRef={this.groupsList}
+						onStart={this.handleGroupsSortStart}
+						onUpdate={this.handleGroupsSortUpdate}
+						onStop={this.handleGroupsSortStop}
 					>
-						<div className="cf-complex__groups" ref={ this.groupsList }>
-							{ value.map( ( group, index ) => (
+						<div className="cf-complex__groups" ref={this.groupsList}>
+							{value.map((group, index) => (
 								// The `key` will be assigned via `onGroupSetup`.
 								// eslint-disable-next-line react/jsx-key
-								<ComplexGroup key={ `${ group[ groupFilterKey ] }-${ index }` } { ...onGroupSetup( group, {
+								<ComplexGroup key={`${group[groupFilterKey]}-${index}`} {...onGroupSetup(group, {
 									index,
-									label: groupLabels[ index ],
-									dragged: group[ groupIdKey ] === currentDraggedGroup,
+									label: groupLabels[index],
+									dragged: group[groupIdKey] === currentDraggedGroup,
 									tabbed: this.isTabbed,
-									hidden: this.isTabbed && group[ groupIdKey ] !== currentTab,
-									allowClone: field.duplicate_groups_allowed && ! this.isMaximumReached,
+									hidden: this.isTabbed && group[groupIdKey] !== currentTab,
+									allowClone: field.duplicate_groups_allowed && !this.isMaximumReached,
 									onFieldSetup: onGroupFieldSetup,
 									onClone: this.handleCloneGroup,
 									onRemove: this.handleRemoveGroup,
 									onToggle: onToggleGroup
-								} ) } />
-							) ) }
+								})} />
+							))}
 						</div>
 					</Sortable>
-				) }
+				)}
 
-				{ ! this.isTabbed && !! value.length && (
+				{!this.isTabbed && !!value.length && (
 					<div className="cf-complex__actions">
-						{ !! availableGroups.length && ! this.isMaximumReached && (
+						{!!availableGroups.length && !this.isMaximumReached && (
 							<ComplexInserter
-								buttonText={ this.inserterButtonText }
-								groups={ availableGroups }
-								onSelect={ this.handleAddGroup }
+								buttonText={this.inserterButtonText}
+								groups={availableGroups}
+								onSelect={this.handleAddGroup}
 							/>
-						) }
+						)}
 
-						<button type="button" className="button cf-complex__toggler" onClick={ this.handleToggleAllClick }>
-							{ allGroupsAreCollapsed ? __( 'Expand All', 'carbon-fields-ui' ) : __( 'Collapse All', 'carbon-fields-ui' ) }
+						<button type="button" className="button cf-complex__toggler" onClick={this.handleToggleAllClick}>
+							{allGroupsAreCollapsed ? __('Expand All', 'carbon-fields-ui') : __('Collapse All', 'carbon-fields-ui')}
 						</button>
 					</div>
-				) }
+				)}
 			</Fragment>
 		);
 	}
 }
 
-addFilter( 'carbon-fields.field-wrapper', 'carbon-fields/core', ( OriginalField ) => ( props ) => {
+addFilter('carbon-fields.field-wrapper', 'carbon-fields/core', (OriginalField) => (props) => {
 	const { field } = props;
 
-	if ( field.type !== 'complex' ) {
-		return <OriginalField { ...props } />;
+	if (field.type !== 'complex') {
+		return <OriginalField {...props} />;
 	}
 
-	return <OriginalField className={ `cf-complex--${ field.layout }` } { ...props } />;
-} );
+	return <OriginalField className={`cf-complex--${field.layout}`} {...props} />;
+});
 
-addFilter( 'carbon-fields.complex.validate', 'carbon-fields/core', ( field, value ) => {
+addFilter('carbon-fields.complex.validate', 'carbon-fields/core', (field, value) => {
 	const {
 		min,
 		labels,
 		required
 	} = field;
 
-	if ( required && isEmpty( value ) ) {
-		return __( 'This field is required.', 'carbon-fields-ui' );
+	if (required && isEmpty(value)) {
+		return __('This field is required.', 'carbon-fields-ui');
 	}
 
-	if ( min > 0 && value.length < min ) {
+	if (min > 0 && value.length < min) {
 		const label = min === 1 ? labels.singular_name : labels.plural_name;
 
 		return sprintf(
-			__( 'Minimum number of rows not reached (%1$d %2$s)', 'carbon-fields-ui' ),
-			Number( min ),
+			__('Minimum number of rows not reached (%1$d %2$s)', 'carbon-fields-ui'),
+			Number(min),
 			label.toLowerCase()
 		);
 	}
 
 	return null;
-} );
+});
 
 export default ComplexField;
